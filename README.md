@@ -14,6 +14,114 @@ trade-off, and additionally implements the Histogram algorithm (git's
 modern default: faster *and* more human-readable for code than plain
 Myers).
 
+## Benefits
+
+- **~4x faster than jsdiff for a single diff**, ~11x for batch workloads
+  (many files at once) — both measured through the real compiled native
+  addon, not the underlying Rust library in isolation. See
+  [Performance](#performance) for the full, honest breakdown, including
+  where the numbers came *down* from bigger ones once FFI cost was
+  accounted for.
+- **`jsdiff`-shaped API** (`diffLines`/`diffWords`/`diffChars`, the same
+  `{value, added, removed, count}` result shape) — switching from `diff`
+  is close to a drop-in change, not a rewrite.
+- **Batch diffing with built-in parallelism** (`diffLinesMany`) — a
+  capability jsdiff structurally can't offer (it's single-threaded with
+  no batch API at all). Useful for linting a whole PR or diffing every
+  file in a directory in one call.
+- **Real correctness guarantees, not just speed**: every diff function
+  is tested to reconstruct the original `before`/`after` text exactly
+  from its output, including multibyte UTF-8 — not just "looks right on
+  an example."
+- Built on `imara-diff`, the same diff engine trusted in production by
+  `gitoxide` — not a from-scratch reimplementation of something
+  security/correctness-sensitive.
+
+## Installation
+
+**Not yet published to npm or PyPI.** To use it today, build from
+source:
+
+```sh
+git clone https://github.com/hsputra/divot.git
+cd divot
+npm install
+npm run build   # compiles the native addon via napi-rs
+```
+
+This produces `index.js`/`index.d.ts` (already committed) plus a
+platform-specific `divot.<platform>.node` binary. `require("./divot")`
+(or `require("/path/to/divot")`) from there.
+
+## How to use
+
+```js
+const { diffLines, diffWords, diffChars, unifiedDiff, diffLinesMany } = require("divot");
+```
+
+### `diffLines(before, after)`
+
+```js
+const before = "function greet(name) {\n  console.log('Hello ' + name);\n}\n";
+const after  = "function greet(name) {\n  console.log(`Hello ${name}!`);\n}\n";
+
+for (const part of diffLines(before, after)) {
+  const prefix = part.added ? "+" : part.removed ? "-" : " ";
+  console.log(prefix + part.value.trimEnd());
+}
+//  function greet(name) {
+// -  console.log('Hello ' + name);
+// +  console.log(`Hello ${name}!`);
+//  }
+```
+
+### `diffWords(before, after)` / `diffChars(before, after)`
+
+Same shape, finer granularity:
+
+```js
+diffWords("the quick brown fox", "the slow brown fox");
+// [
+//   { value: "the ", added: false, removed: false, count: 2 },
+//   { value: "quick", added: false, removed: true, count: 1 },
+//   { value: "slow", added: true, removed: false, count: 1 },
+//   { value: " brown fox", added: false, removed: false, count: 4 },
+// ]
+```
+
+### `unifiedDiff(before, after)`
+
+Real `git diff`/`diff -u`-style patch text:
+
+```js
+console.log(unifiedDiff(before, after));
+// @@ -1,3 +1,3 @@
+//  function greet(name) {
+// -  console.log('Hello ' + name);
+// +  console.log(`Hello ${name}!`);
+//  }
+```
+
+### `diffLinesMany(pairs)` — batch, parallel across CPU cores
+
+For diffing many files at once (the realistic shape of CI/lint/AI-agent
+workloads), not a loop of individual `diffLines` calls:
+
+```js
+const results = diffLinesMany([
+  { before: fileAContentOld, after: fileAContentNew },
+  { before: fileBContentOld, after: fileBContentNew },
+  // ...
+]);
+// results[i] is exactly what diffLines(pairs[i].before, pairs[i].after)
+// would return -- diffLinesMany just does all of them across a Rayon
+// thread pool instead of one at a time.
+```
+
+Only reaches for this when you actually have many pairs — for a single
+diff, plain `diffLines` is the right call; see
+[Performance](#performance) for why.
+
 ## Performance
 
 Real, measured, reproducible — not projected. 270 before/after pairs
@@ -74,8 +182,8 @@ modes it targets). Nothing here is published to any registry yet.
 Built on [`imara-diff`](https://github.com/pascalkuthe/imara-diff)
 (Apache-2.0) by Pascal Kuthe — the diff computation itself is that
 crate's work; this project adds word/char tokenization (not provided
-upstream), a `jsdiff`-compatible result shape, and (planned) the
-patch-application layer.
+upstream), a `jsdiff`-compatible result shape, batch/parallel diffing,
+and (planned) the patch-application layer.
 
 ## License
 
