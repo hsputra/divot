@@ -49,6 +49,9 @@ jobs:
         with:
           node-version: 20
       - run: npm install
+      - name: Set up zig (needed by --cross-compile's cargo-zigbuild backend)
+        if: ${{ matrix.cross }}
+        uses: mlugg/setup-zig@v2
       - name: Build (native)
         if: ${{ !matrix.cross }}
         run: npx napi build --platform --release --features node --target ${{ matrix.target }}
