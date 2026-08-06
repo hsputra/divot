@@ -24,8 +24,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # macos-latest runners are arm64 -- x86_64-apple-darwin is a
+          # cross build there (can't load an x64 .node into an arm64
+          # Node process in-process), aarch64-apple-darwin is native.
           - host: macos-latest
             target: x86_64-apple-darwin
+            cross: true
           - host: macos-latest
             target: aarch64-apple-darwin
           - host: windows-latest
@@ -48,10 +52,10 @@ jobs:
       - name: Build (native)
         if: ${{ !matrix.cross }}
         run: npx napi build --platform --release --features node --target ${{ matrix.target }}
-      - name: Build (cross, napi toolchain)
+      - name: Build (cross)
         if: ${{ matrix.cross }}
-        run: npx napi build --platform --release --features node --target ${{ matrix.target }} --use-napi-cross
-      - name: Test (native targets only)
+        run: npx napi build --platform --release --features node --target ${{ matrix.target }} --cross-compile
+      - name: Test (native targets only -- can't load a cross-arch .node in-process)
         if: ${{ !matrix.cross }}
         run: node --test
       - uses: actions/upload-artifact@v4
