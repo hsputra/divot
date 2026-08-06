@@ -143,6 +143,12 @@ for transparency about where FFI (UTF-16→UTF-8 conversion in, JS object
 construction out) costs real time, not to imply it's what you'll
 observe from JS.
 
+<img src="plots/jsdiff_comparison.svg" alt="Per-diff latency: divot vs jsdiff, log-log scatter across 270 real pairs" width="600">
+<img src="plots/jsdiff_speedup.svg" alt="Per-diff speedup: divot vs jsdiff across 270 real pairs, mean marked" width="600">
+
+Full methodology, raw CSV data, and the chart-generation script are in
+[`plots/`](plots/).
+
 ### Batch diffing: a real capability jsdiff can't offer
 
 `diffLinesMany()` diffs many pairs at once across all available CPU
@@ -164,6 +170,8 @@ pure-Rust number exactly. **The multiplier scales with available cores**
 11x faster. Useful for realistic bulk workloads (lint a whole PR, diff
 every file in a directory), less useful for a one-off single diff, where
 `diffLines()` is the right call.
+
+<img src="plots/batch_scaling.svg" alt="Batch/parallel diffing throughput vs thread count, divot vs jsdiff single-threaded reference line" width="600">
 
 ## Status
 
