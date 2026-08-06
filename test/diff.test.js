@@ -1,6 +1,6 @@
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
-const { diffLines, diffWords, diffChars, unifiedDiff } = require("../index.js");
+const { diffLines, diffWords, diffChars, unifiedDiff, diffLinesMany } = require("../index.js");
 
 function reconstruct(changes, side) {
   return changes.filter((c) => !c[side]).map((c) => c.value).join("");
@@ -46,4 +46,17 @@ test("unifiedDiff produces a real @@ hunk header and +/- lines", () => {
   assert.match(patch, /@@/);
   assert.match(patch, /-b/);
   assert.match(patch, /\+B/);
+});
+
+test("diffLinesMany matches calling diffLines per pair, in order", () => {
+  const pairs = [
+    { before: "a\nb\n", after: "a\nB\n" },
+    { before: "x\ny\nz\n", after: "x\ny\nz\n" },
+    { before: "one\ntwo\n", after: "one\nthree\ntwo\n" },
+  ];
+  const batched = diffLinesMany(pairs);
+  assert.equal(batched.length, pairs.length);
+  pairs.forEach((p, i) => {
+    assert.deepEqual(batched[i], diffLines(p.before, p.after));
+  });
 });

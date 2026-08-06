@@ -35,12 +35,34 @@ for transparency about where FFI (UTF-16→UTF-8 conversion in, JS object
 construction out) costs real time, not to imply it's what you'll
 observe from JS.
 
+### Batch diffing: a real capability jsdiff can't offer
+
+`diffLinesMany()` diffs many pairs at once across all available CPU
+cores (via Rayon internally) — not an algorithm improvement over
+`imara-diff`, a different capability entirely: jsdiff is single-threaded
+with no built-in batch API, so this isn't something it can match by
+being faster, only by the caller manually parallelizing across worker
+threads/processes themselves.
+
+| | Time/pair | vs. jsdiff (looped) |
+|---|---|---|
+| jsdiff v9.0.0, called in a loop | ~118.4µs | — |
+| **`diffLinesMany`, real npm binding, 18 cores** | **~10.5µs** | **~11x** |
+
+Verified this is genuinely about parallelism and not some batching
+trick: forcing a single Rayon thread reproduces the non-batched ~19.8µs
+pure-Rust number exactly. **The multiplier scales with available cores**
+— it's a batch-throughput number, not a claim that any single diff got
+11x faster. Useful for realistic bulk workloads (lint a whole PR, diff
+every file in a directory), less useful for a one-off single diff, where
+`diffLines()` is the right call.
+
 ## Status
 
 Early. Implemented and tested: line/word/char diffing, unified diff
-output, npm binding (`diffLines`/`diffWords`/`diffChars`/`unifiedDiff`,
-real native addon, real tests via Node's built-in test runner). No CLI
-yet.
+output, npm binding (`diffLines`/`diffWords`/`diffChars`/`unifiedDiff`/
+`diffLinesMany`, real native addon, real tests via Node's built-in test
+runner). No CLI yet.
 
 Not yet implemented: Python bindings (PyO3), a fuzzy/atomic
 patch-application layer (the planned differentiator for LLM-coding-agent

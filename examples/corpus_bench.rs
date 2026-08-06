@@ -5,7 +5,7 @@
 use std::fs;
 use std::time::Instant;
 
-use divot::{line_diff, Algorithm};
+use divot::{line_diff, line_diff_many, Algorithm};
 
 fn main() {
     let corpus_dir = std::env::args().nth(1).expect("corpus dir arg required");
@@ -14,6 +14,7 @@ fn main() {
         Some("myers") => Algorithm::Myers,
         _ => Algorithm::Histogram,
     };
+    let batched = std::env::args().nth(4).as_deref() == Some("batched");
 
     let mut pairs = Vec::with_capacity(n_pairs);
     for i in 1..=n_pairs {
@@ -23,19 +24,32 @@ fn main() {
             pairs.push((before, after));
         }
     }
-    eprintln!("loaded {} pairs", pairs.len());
+    eprintln!("loaded {} pairs, batched={batched}, threads={}", pairs.len(), rayon::current_num_threads());
 
-    for (before, after) in &pairs {
-        std::hint::black_box(line_diff(before, after, algorithm));
+    let pair_refs: Vec<(&str, &str)> = pairs.iter().map(|(b, a)| (b.as_str(), a.as_str())).collect();
+
+    if batched {
+        std::hint::black_box(line_diff_many(&pair_refs, algorithm));
+    } else {
+        for (before, after) in &pairs {
+            std::hint::black_box(line_diff(before, after, algorithm));
+        }
     }
 
     let t0 = Instant::now();
-    let mut total_changes = 0usize;
-    for (before, after) in &pairs {
-        let changes = line_diff(before, after, algorithm);
-        total_changes += changes.iter().filter(|c| c.added || c.removed).count();
-        std::hint::black_box(&changes);
-    }
+    let total_changes: usize = if batched {
+        line_diff_many(&pair_refs, algorithm)
+            .iter()
+            .map(|changes| changes.iter().filter(|c| c.added || c.removed).count())
+            .sum()
+    } else {
+        pairs
+            .iter()
+            .map(|(before, after)| {
+                line_diff(before, after, algorithm).iter().filter(|c| c.added || c.removed).count()
+            })
+            .sum()
+    };
     let elapsed = t0.elapsed();
 
     println!("pairs: {}", pairs.len());

@@ -11,6 +11,21 @@ export declare function diffChars(before: string, after: string): Array<Change>
 
 export declare function diffLines(before: string, after: string): Array<Change>
 
+/**
+ * Diffs many pairs at once across a Rayon thread pool -- a real
+ * capability jsdiff can't offer (single-threaded, no built-in batch
+ * API), not just a convenience wrapper. Synchronous in v1: blocks the
+ * JS event loop for the (much shorter, parallelized) duration of the
+ * batch; a properly async version (releasing the event loop via napi's
+ * task API) is natural follow-up work, not done here.
+ */
+export declare function diffLinesMany(pairs: Array<DiffPair>): Array<Array<Change>>
+
+export interface DiffPair {
+  before: string
+  after: string
+}
+
 export declare function diffWords(before: string, after: string): Array<Change>
 
 export declare function unifiedDiff(before: string, after: string): string

@@ -702,5 +702,6 @@ if (!nativeBinding) {
 module.exports = nativeBinding
 module.exports.diffChars = nativeBinding.diffChars
 module.exports.diffLines = nativeBinding.diffLines
+module.exports.diffLinesMany = nativeBinding.diffLinesMany
 module.exports.diffWords = nativeBinding.diffWords
 module.exports.unifiedDiff = nativeBinding.unifiedDiff

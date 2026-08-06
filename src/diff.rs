@@ -109,6 +109,23 @@ pub fn line_diff<'a>(before: &'a str, after: &'a str, algorithm: Algorithm) -> V
     hunks_to_changes(&diff, &input, before, after, |tok: &&str| tok.len())
 }
 
+/// Diffs many `(before, after)` pairs at once, across a Rayon thread pool.
+///
+/// Not just a convenience wrapper around calling [`line_diff`] in a loop:
+/// for bulk workloads (lint a whole PR, diff every file in a directory --
+/// the realistic shape of AI-coding-agent and CI usage this project
+/// targets), this is genuinely faster in wall-clock terms than either
+/// jsdiff (single-threaded, JS has no real parallelism for CPU-bound work
+/// without spinning up worker threads per call) or calling divot's own
+/// per-pair binding N times (which pays the FFI crossing cost N times
+/// instead of once). This is not "beating imara-diff's algorithm" --
+/// it's using multiple cores for a workload shape a single-diff API
+/// structurally can't.
+pub fn line_diff_many<'a>(pairs: &[(&'a str, &'a str)], algorithm: Algorithm) -> Vec<Vec<Change<'a>>> {
+    use rayon::prelude::*;
+    pairs.par_iter().map(|&(before, after)| line_diff(before, after, algorithm)).collect()
+}
+
 /// Diffs `before`/`after` word by word. "Word" means a maximal run of
 /// alphanumeric/`_` characters; runs of whitespace/punctuation between
 /// words are their own tokens, so e.g. a single added space is reported
@@ -228,6 +245,20 @@ mod tests {
             let reconstructed_after: String = changes.iter().filter(|c| !c.removed).map(|c| c.value).collect();
             assert_eq!(reconstructed_before, before);
             assert_eq!(reconstructed_after, after);
+        }
+    }
+
+    #[test]
+    fn line_diff_many_matches_sequential_line_diff() {
+        let pairs = [
+            ("a\nb\n", "a\nB\n"),
+            ("x\ny\nz\n", "x\ny\nz\n"),
+            ("one\ntwo\n", "one\nthree\ntwo\n"),
+        ];
+        let batched = line_diff_many(&pairs, Algorithm::Histogram);
+        assert_eq!(batched.len(), pairs.len());
+        for (i, &(before, after)) in pairs.iter().enumerate() {
+            assert_eq!(batched[i], line_diff(before, after, Algorithm::Histogram));
         }
     }
 }
