@@ -2,12 +2,21 @@
 name = "divot"
 version = "0.1.0"
 edition = "2024"
-description = "Fast diff/patch engine for Python and Node, in Rust"
+description = "Fast diff/patch engine, in Rust, with a Node.js binding (Python planned)"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/hsputra/divot"
 readme = "README.md"
 keywords = ["diff", "patch", "text", "myers", "histogram"]
 categories = ["algorithms", "text-processing"]
+exclude = [
+    "npm/",
+    "plots/",
+    "scripts/",
+    "test/",
+    ".github/",
+    "package.json",
+    "package-lock.json",
+]
 
 [lib]
 name = "divot"
