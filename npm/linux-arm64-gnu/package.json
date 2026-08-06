@@ -1,0 +1,35 @@
+{
+  "name": "divot-linux-arm64-gnu",
+  "version": "0.1.0",
+  "cpu": [
+    "arm64"
+  ],
+  "main": "divot.linux-arm64-gnu.node",
+  "files": [
+    "divot.linux-arm64-gnu.node"
+  ],
+  "description": "Fast diff/patch engine, in Rust, with Python and Node bindings.",
+  "keywords": [
+    "diff",
+    "patch",
+    "myers",
+    "histogram",
+    "rust"
+  ],
+  "author": "Henry Syahputra <henry.syahputra@gmail.com>",
+  "homepage": "https://github.com/hsputra/divot#readme",
+  "license": "MIT OR Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hsputra/divot.git"
+  },
+  "bugs": {
+    "url": "https://github.com/hsputra/divot/issues"
+  },
+  "os": [
+    "linux"
+  ],
+  "libc": [
+    "glibc"
+  ]
+}

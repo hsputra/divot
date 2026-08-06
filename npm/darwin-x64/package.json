@@ -1,0 +1,32 @@
+{
+  "name": "divot-darwin-x64",
+  "version": "0.1.0",
+  "cpu": [
+    "x64"
+  ],
+  "main": "divot.darwin-x64.node",
+  "files": [
+    "divot.darwin-x64.node"
+  ],
+  "description": "Fast diff/patch engine, in Rust, with Python and Node bindings.",
+  "keywords": [
+    "diff",
+    "patch",
+    "myers",
+    "histogram",
+    "rust"
+  ],
+  "author": "Henry Syahputra <henry.syahputra@gmail.com>",
+  "homepage": "https://github.com/hsputra/divot#readme",
+  "license": "MIT OR Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hsputra/divot.git"
+  },
+  "bugs": {
+    "url": "https://github.com/hsputra/divot/issues"
+  },
+  "os": [
+    "darwin"
+  ]
+}
