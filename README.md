@@ -50,13 +50,16 @@ npm run build   # compiles the native addon via napi-rs
 ```
 
 This produces `index.js`/`index.d.ts` (already committed) plus a
-platform-specific `divot.<platform>.node` binary. `require("./divot")`
-(or `require("/path/to/divot")`) from there.
+platform-specific `divot.<platform>.node` binary. `require("./index.js")`
+(or `require("/path/to/divot")`, which resolves the same way via
+`package.json`'s `main` field) from there.
 
 ## How to use
 
 ```js
-const { diffLines, diffWords, diffChars, unifiedDiff, diffLinesMany } = require("divot");
+// Once published: require("divot"). Until then, per Installation above,
+// require the path to your local build instead:
+const { diffLines, diffWords, diffChars, unifiedDiff, diffLinesMany } = require("./index.js");
 ```
 
 ### `diffLines(before, after)`
@@ -136,12 +139,13 @@ and with divot, same corpus, both warmed up first.
 | **divot, via the real npm binding** | **29.9µs** | **~4.0x** |
 | divot, pure Rust (no FFI) | ~19.8µs | ~5.9x |
 
-**~4.0x is the number that matters** — it's what `npm install divot`
-actually delivers, measured through the real compiled native addon, not
-the underlying Rust library in isolation. The pure-Rust figure is shown
-for transparency about where FFI (UTF-16→UTF-8 conversion in, JS object
-construction out) costs real time, not to imply it's what you'll
-observe from JS.
+**~4.0x is the number that matters** — it's what the compiled npm
+binding actually delivers (not yet published, but built and measured
+exactly as it will ship — see [Installation](#installation)), measured
+through the real compiled native addon, not the underlying Rust library
+in isolation. The pure-Rust figure is shown for transparency about where
+FFI (UTF-16→UTF-8 conversion in, JS object construction out) costs real
+time, not to imply it's what you'll observe from JS.
 
 <img src="plots/jsdiff_comparison.svg" alt="Per-diff latency: divot vs jsdiff, log-log scatter across 270 real pairs" width="600">
 <img src="plots/jsdiff_speedup.svg" alt="Per-diff speedup: divot vs jsdiff across 270 real pairs, mean marked" width="600">
