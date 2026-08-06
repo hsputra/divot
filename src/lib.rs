@@ -14,5 +14,8 @@
 mod diff;
 mod tokenize;
 
+#[cfg(feature = "node")]
+mod node;
+
 pub use diff::{char_diff, line_diff, unified_diff, word_diff, Change};
 pub use imara_diff::Algorithm;

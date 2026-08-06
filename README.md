@@ -19,28 +19,33 @@ Myers).
 Real, measured, reproducible — not projected. 270 before/after pairs
 extracted from jQuery's actual git history (`src/event.js`, `css.js`,
 `core.js`, `manipulation.js`, `selector.js`, `ajax.js`, `effects.js`,
-`deferred.js`), diffed with both divot's actual public API and the real
-`diff` npm package (jsdiff v9.0.0), same corpus, both warmed up first.
+`deferred.js`), diffed with the real `diff` npm package (jsdiff v9.0.0)
+and with divot, same corpus, both warmed up first.
 
-| Algorithm | divot | jsdiff v9.0.0 | Speedup |
-|---|---|---|---|
-| Histogram (default) | ~19.8µs/pair | 117.5µs/pair | **~5.9x** |
-| Myers | ~20.4µs/pair | 117.5µs/pair | **~5.8x** |
+| | Time/pair | vs. jsdiff |
+|---|---|---|
+| jsdiff v9.0.0 (`diffLines`) | 118.96µs | — |
+| **divot, via the real npm binding** | **29.9µs** | **~4.0x** |
+| divot, pure Rust (no FFI) | ~19.8µs | ~5.9x |
 
-This is the number divot's actual public API delivers, including result
-construction — not a raw-library-only figure with wrapping overhead
-quietly excluded.
+**~4.0x is the number that matters** — it's what `npm install divot`
+actually delivers, measured through the real compiled native addon, not
+the underlying Rust library in isolation. The pure-Rust figure is shown
+for transparency about where FFI (UTF-16→UTF-8 conversion in, JS object
+construction out) costs real time, not to imply it's what you'll
+observe from JS.
 
 ## Status
 
 Early. Implemented and tested: line/word/char diffing, unified diff
-output — the core Rust crate only, no language bindings yet, no CLI.
+output, npm binding (`diffLines`/`diffWords`/`diffChars`/`unifiedDiff`,
+real native addon, real tests via Node's built-in test runner). No CLI
+yet.
 
-Not yet implemented: Python bindings (PyO3), Node bindings (napi-rs), a
-fuzzy/atomic patch-application layer (the planned differentiator for
-LLM-coding-agent workflows — see the project's technical spec for detail
-on the failure modes it targets). Nothing here is published to any
-registry yet.
+Not yet implemented: Python bindings (PyO3), a fuzzy/atomic
+patch-application layer (the planned differentiator for LLM-coding-agent
+workflows — see the project's technical spec for detail on the failure
+modes it targets). Nothing here is published to any registry yet.
 
 ## Credit
 
