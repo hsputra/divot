@@ -1,6 +1,11 @@
 # divot
 
-Fast diff/patch engine, in Rust, with Python and Node bindings.
+[![crates.io](https://img.shields.io/crates/v/divot.svg)](https://crates.io/crates/divot)
+[![docs.rs](https://img.shields.io/docsrs/divot)](https://docs.rs/divot)
+[![Downloads](https://img.shields.io/crates/d/divot.svg)](https://crates.io/crates/divot)
+[![License](https://img.shields.io/crates/l/divot.svg)](#license)
+
+Fast diff/patch engine, in Rust, with a Node.js binding (Python planned).
 
 ## Why
 
@@ -39,8 +44,23 @@ Myers).
 
 ## Installation
 
-**Not yet published to npm or PyPI.** To use it today, build from
-source:
+**Rust**: published on crates.io.
+
+```sh
+cargo add divot
+```
+
+```rust
+use divot::{line_diff, Algorithm};
+
+let changes = line_diff("abc\ndef\n", "abc\nDEF\n", Algorithm::Histogram);
+for c in &changes {
+    let sign = if c.added { "+" } else if c.removed { "-" } else { " " };
+    print!("{sign}{}", c.value);
+}
+```
+
+**Node**: **not yet published to npm.** Build from source:
 
 ```sh
 git clone https://github.com/hsputra/divot.git
@@ -54,7 +74,13 @@ platform-specific `divot.<platform>.node` binary. `require("./index.js")`
 (or `require("/path/to/divot")`, which resolves the same way via
 `package.json`'s `main` field) from there.
 
-## How to use
+**Python**: not yet available — the PyO3 binding hasn't been built.
+
+## How to use (Node)
+
+The Rust API is `line_diff`/`word_diff`/`char_diff`/`unified_diff`
+(see the [crate docs](https://docs.rs/divot)) — same shape as the JS
+functions below, just snake_case.
 
 ```js
 // Once published: require("divot"). Until then, per Installation above,
@@ -187,7 +213,7 @@ runner). No CLI yet.
 Not yet implemented: Python bindings (PyO3), a fuzzy/atomic
 patch-application layer (the planned differentiator for LLM-coding-agent
 workflows — see the project's technical spec for detail on the failure
-modes it targets). Nothing here is published to any registry yet.
+modes it targets). Published on crates.io; not yet on npm or PyPI.
 
 ## Credit
 
