@@ -1,0 +1,17 @@
+[package]
+name = "divot"
+version = "0.1.0"
+edition = "2024"
+description = "Fast diff/patch engine for Python and Node, in Rust"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/hsputra/divot"
+readme = "README.md"
+keywords = ["diff", "patch", "text", "myers", "histogram"]
+categories = ["algorithms", "text-processing"]
+
+[lib]
+name = "divot"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+imara-diff = { version = "0.2", features = ["unified_diff"] }
