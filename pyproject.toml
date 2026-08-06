@@ -1,0 +1,30 @@
+[build-system]
+requires = ["maturin>=1.5,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "divot"
+version = "0.1.0"
+description = "Fast diff/patch engine, in Rust, with a Python binding"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "MIT OR Apache-2.0" }
+authors = [{ name = "Henry Syahputra", email = "henry.syahputra@gmail.com" }]
+keywords = ["diff", "patch", "myers", "histogram", "rust"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Rust",
+    "Programming Language :: Python :: 3",
+    "Topic :: Text Processing",
+    "Topic :: Software Development :: Version Control",
+]
+
+[project.urls]
+Repository = "https://github.com/hsputra/divot"
+
+[tool.maturin]
+features = ["python"]
+module-name = "divot"

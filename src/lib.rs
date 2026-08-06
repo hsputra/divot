@@ -17,5 +17,8 @@ mod tokenize;
 #[cfg(feature = "node")]
 mod node;
 
+#[cfg(feature = "python")]
+mod python;
+
 pub use diff::{char_diff, line_diff, line_diff_many, unified_diff, word_diff, Change};
 pub use imara_diff::Algorithm;

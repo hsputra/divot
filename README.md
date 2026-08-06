@@ -5,7 +5,7 @@
 [![Downloads](https://img.shields.io/crates/d/divot.svg)](https://crates.io/crates/divot)
 [![License](https://img.shields.io/crates/l/divot.svg)](#license)
 
-Fast diff/patch engine, in Rust, with a Node.js binding (Python planned).
+Fast diff/patch engine, in Rust, with Node.js and Python bindings.
 
 ## Why
 
@@ -74,7 +74,24 @@ platform-specific `divot.<platform>.node` binary. `require("./index.js")`
 (or `require("/path/to/divot")`, which resolves the same way via
 `package.json`'s `main` field) from there.
 
-**Python**: not yet available — the PyO3 binding hasn't been built.
+**Python**: **not yet published to PyPI.** Build from source:
+
+```sh
+git clone https://github.com/hsputra/divot.git
+cd divot
+pip install maturin
+maturin build --release
+pip install target/wheels/divot-0.1.0-*.whl
+```
+
+```python
+import divot
+
+changes = divot.diff_lines("abc\ndef\n", "abc\nDEF\n")
+for c in changes:
+    sign = "+" if c.added else "-" if c.removed else " "
+    print(sign + c.value, end="")
+```
 
 ## How to use (Node)
 
@@ -208,12 +225,15 @@ every file in a directory), less useful for a one-off single diff, where
 Early. Implemented and tested: line/word/char diffing, unified diff
 output, npm binding (`diffLines`/`diffWords`/`diffChars`/`unifiedDiff`/
 `diffLinesMany`, real native addon, real tests via Node's built-in test
-runner). No CLI yet.
+runner), Python binding (`diff_lines`/`diff_words`/`diff_chars`/
+`unified_diff`/`diff_lines_many`, real built wheel, real tests via
+pytest). No CLI yet.
 
-Not yet implemented: Python bindings (PyO3), a fuzzy/atomic
-patch-application layer (the planned differentiator for LLM-coding-agent
-workflows — see the project's technical spec for detail on the failure
-modes it targets). Published on crates.io; not yet on npm or PyPI.
+Not yet implemented: a fuzzy/atomic patch-application layer (the
+planned differentiator for LLM-coding-agent workflows — see the
+project's technical spec for detail on the failure modes it targets).
+Published on crates.io; not yet on npm or PyPI (both bindings are
+built and tested, just not yet published — see Installation above).
 
 ## Credit
 
