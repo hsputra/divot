@@ -69,11 +69,26 @@ jobs:
         run: npx napi artifacts --npm-dir npm
       - name: Sync per-platform package versions
         run: npx napi version
-      - name: Publish per-platform packages + create GitHub release
+      - name: Reconcile root package + create GitHub release
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx napi pre-publish --npm-dir npm --tag-style npm
+        run: npx napi pre-publish --npm-dir npm --tag-style npm --skip-optional-publish
+      - name: Publish per-platform packages (staggered -- publishing all 5 back-to-back
+          previously tripped npm's spam-detection heuristic on the last one)
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          for dir in npm/*/; do
+            name=$(node -p "require('./${dir}package.json').name")
+            version=$(node -p "require('./${dir}package.json').version")
+            if npm view "$name@$version" version >/dev/null 2>&1; then
+              echo "Skipping $name@$version -- already published"
+            else
+              (cd "$dir" && npm publish)
+            fi
+            sleep 20
+          done
       - name: Publish root package
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
